@@ -68,7 +68,7 @@ print("================================================")
 print("AVG for put is " + str(rangeP))
 for key in dictP:
     if dictP[key] > rangeP:
-        print("Call " + str(key) + " " + str(dictP[key]))
+        print("Put " + str(key) + " " + str(dictP[key]))
 
 #stop program
 input("\nPress anything to exit")

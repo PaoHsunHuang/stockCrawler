@@ -4,24 +4,23 @@ from bs4 import BeautifulSoup
 import time
 
 def myCast(str):
+    #remove ',' in string make it nunber
     a = str.split(',')
     ret = ""
     for ele in a:
         ret += ele
-
     return ret
 
-def call(url):
-
+def checkVolume(url):
+    #get html
     html = requests.get(url).text
-
-    #parse data
     root = BeautifulSoup(html, "html.parser")
 
-    #read all volume
+    #read volume, and strike
     volume = root.find_all("td", class_ = "data-col8")
     strike = root.find_all("a", class_ = "C($linkColor) Fz(s)")
 
+    #if data exist
     if volume and strike:
         totalC = 0
         countC = 0
@@ -38,13 +37,13 @@ def call(url):
         for eleV, eleS in zip(volume, strike):
             #chagne between put and call
             strS = str(eleS.string)
-            numS = float(strS)
+            numS = float(myCast(strS))
             if numS > last:
                 last = numS
             else:
                 type = "put"
 
-            #calculate volume
+            #calculate total volume, for calculate avg
             strV = str(eleV.text)
             if strV != '-':
                 numV = int(myCast(strV))
@@ -55,7 +54,7 @@ def call(url):
             else:
                 numV = 0
 
-            #put data into dict
+            #put data into dictionary
             if type == "call":
                 countC += 1
                 dictC[numS] = numV
@@ -63,13 +62,13 @@ def call(url):
                 countP += 1
                 dictP[numS] = numV
 
-        #print("Call AVG: " + str(totalC / countC))
-        #print("Put AVG: " + str(totalP / countP))
+        #calculate avg
         avgC = totalC / countC
         avgP = totalP / countP
         rangeC = avgC * Multiply
         rangeP = avgP * Multiply
 
+        #output result
         print("AVG for call is " + str(round(rangeC, 2)))
         for key in dictC:
             if dictC[key] > rangeC:
@@ -81,6 +80,7 @@ def call(url):
                 print("Put " + str(key) + " " + str(dictP[key]))
         print("================================================")
 
+    #if this date is not exist, print error message
     else:
         print("Date not exist")
         print("================================================")
@@ -88,8 +88,8 @@ def call(url):
 
 
 
-    #stop program
 
+#THIS IS THE START OF THE PROGRAM
 
 #get current time, calcualte next friday
 #use next 4 week of friday to run
@@ -97,6 +97,7 @@ cur = time.time()
 oneWeekUnix = 604800
 nextFriday = 1592524800
 
+company = input("Enter Stock Code:")
 while nextFriday < cur:
     nextFriday += oneWeekUnix
 
@@ -105,12 +106,15 @@ for i in range(4):
     timeList.append(str(nextFriday))
     nextFriday += oneWeekUnix
 i = 1;
+print("Check company " + company)
 for ele in timeList:
-    url = "https://finance.yahoo.com/quote/FB/options?date="
+    url = "https://finance.yahoo.com/quote/"
+    url += company
+    url += "/options?date="
     url += ele
     print("WEEK" + str(i))
     i += 1
-    call(url)
+    checkVolume(url)
 
 
 
